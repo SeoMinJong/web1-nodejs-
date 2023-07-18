@@ -15,70 +15,96 @@ var app = http.createServer(function (req, res) {
 
     if (pathname === '/') {
         if (query_date.id === undefined) {
-            fs.readFile(`data/${query_date.id}`, 'utf-8', function (err, description) {
+
+            fs.readdir('./data', function(err, filelist){
+                console.log(filelist)
+
                 var title = 'Welcome';
                 var description = 'Hellom, Node.js';
-                var template = `
-            <!doctype html>
-            <html>
-            
-            <head>
-                <meta charset="utf-8">
-                <link rel="icon" href="data:,">
-                <title>WEB1 - ${title}</title>
-            </head>
-            
-            <body>
-                <h1><a href="/">WEB</a></h1>
-                <ol>
-                    <li><a href="/?id=HTML">HTML</a></li>
-                    <li><a href="/?id=CSS">CSS</a></li>
-                    <li><a href="/?id=JavaScript">JavaScript</a></li>
-                </ol>
-                <h2>${title}</h2>
-                <p>
-                    ${description}
-                </p>
-            </body>
-            
-            </html>
-            `
-                res.writeHead(200);
-                res.end(template);
-            })
-        } else {
-            fs.readFile(`data/${query_date.id}`, 'utf-8', function (err, description) {
-                var title = query_date.id;
-                var template = `
-            <!doctype html>
-            <html>
-            
-            <head>
-                <meta charset="utf-8">
-                <link rel="icon" href="data:,">
-                <title>WEB1 - ${title}</title>
-            </head>
-            
-            <body>
-                <h1><a href="/">WEB</a></h1>
-                <ol>
-                    <li><a href="/?id=HTML">HTML</a></li>
-                    <li><a href="/?id=CSS">CSS</a></li>
-                    <li><a href="/?id=JavaScript">JavaScript</a></li>
-                </ol>
-                <h2>${title}</h2>
-                <p>
-                    ${description}
-                </p>
-            </body>
-            
-            </html>
-            `
-                res.writeHead(200);
-                res.end(template);
-            })
-        }
 
+                // 유동적인 파일 
+                _list = '<ul>';
+                var i = 0;
+
+                while (filelist.length > i){
+                    _list += `\n<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`
+                    i += 1;
+                    console.log(filelist[i])
+                };
+                _list += '</ul>'
+
+                var template = `
+                    <!doctype html>
+                    <html>
+                    
+                    <head>
+                        <meta charset="utf-8">
+                        <link rel="icon" href="data:,">
+                        <title>WEB1 - ${title}</title>
+                    </head>
+                    
+                    <body>
+                        <h1><a href="/">WEB</a></h1>
+                        ${_list}
+
+                        <h2>${title}</h2>
+                        <p>
+                            ${description}
+                        </p>
+                    </body>
+                    
+                    </html>
+                    `
+                res.writeHead(200);
+                res.end(template);
+            })
+            
+        } else {
+            fs.readdir('./data', function(err, filelist){
+                console.log(filelist)
+
+                var title = 'Welcome';
+                var description = 'Hellom, Node.js';
+
+                // 유동적인 파일 목록 리스트
+                _list = '<ul>';
+                var i = 0;
+
+                while (filelist.length > i){
+                    _list += `\n<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`
+                    i += 1;
+                    console.log(filelist[i])
+                };
+                _list += '</ul>'
+                
+                fs.readFile(`data/${query_date.id}`, 'utf-8', function (err, description) {
+                    var title = query_date.id;
+                    var template = `
+                    <!doctype html>
+                    <html>
+                    
+                    <head>
+                        <meta charset="utf-8">
+                        <link rel="icon" href="data:,">
+                        <title>WEB1 - ${title}</title>
+                    </head>
+                    
+                    <body>
+                        <h1><a href="/">WEB</a></h1>
+                        ${_list}
+                        <h2>${title}</h2>
+                        <p>
+                            ${description}
+                        </p>
+                    </body>
+                    
+                    </html>
+                    `
+                    res.writeHead(200);
+                    res.end(template);
+                })
+            });
+        }
     } else {
         res.writeHead(404);
         res.end('Not Found!')
