@@ -17,7 +17,7 @@ function templateHTML(title, list, body){
     <body>
         <h1><a href="/">WEB</a></h1>
         ${list}
-
+        <a href="/create">create</a>
     ${body}
     </body>
     
@@ -77,6 +77,26 @@ var app = http.createServer(function (req, res) {
                 })
             });
         }
+    }else if(pathname === '/create'){
+        fs.readdir('./data', function(err, filelist){
+            var title = 'WEB - CREATE';
+
+            // 유동적인 파일 
+            var _list = templateList(filelist);
+            var template = templateHTML(title, _list, `
+            <form action="localhost:3000/process_create" method="post">
+            <p><input type="text" name="title" placeholder="title"></p>
+            <p>
+                <textarea name="description" placeholder="description"></textarea>
+            </p>
+            <p>
+                <input type="submit">
+            </p>
+            </form>`);
+            
+            res.writeHead(200);
+            res.end(template);
+        })
     } else {
         res.writeHead(404);
         res.end('Not Found!')
