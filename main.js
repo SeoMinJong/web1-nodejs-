@@ -1,6 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var url = require('url');
+var qs = require('querystring');
 
 function templateHTML(title, list, body){
 
@@ -47,7 +48,6 @@ var app = http.createServer(function (req, res) {
     // if(title == null){
     //     title = 'Welcome'
     // };
-    console.log(query_date.id)
 
     if (pathname === '/') {
         if (query_date.id === undefined) {
@@ -84,7 +84,7 @@ var app = http.createServer(function (req, res) {
             // 유동적인 파일 
             var _list = templateList(filelist);
             var template = templateHTML(title, _list, `
-            <form action="localhost:3000/process_create" method="post">
+            <form action="http://localhost:3000/create_process" method="post">
             <p><input type="text" name="title" placeholder="title"></p>
             <p>
                 <textarea name="description" placeholder="description"></textarea>
@@ -97,9 +97,25 @@ var app = http.createServer(function (req, res) {
             res.writeHead(200);
             res.end(template);
         })
-    } else {
+    }else if(pathname==='/create_process'){
+        // API post 형식으로 데이터를 받을 때 사용하는 형식
+        var body='';
+        req.on('data', function(data){
+            body = body + data;
+            console.log('body : '+body);
+        });
+        req.on('end', function(){
+            var post = qs.parse(body);
+            var title = post.title;
+            var description = post.description;
+            console.log(post.title, post.description);
+        });
+
+        res.writeHead(200);
+        res.end('success');
+    }else {
         res.writeHead(404);
-        res.end('Not Found!')
+        res.end('Not Found!');
     }
 
 })
