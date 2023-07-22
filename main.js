@@ -77,10 +77,16 @@ var app = http.createServer(function (req, res) {
                     var _list = templateList(filelist);
                     var template = templateHTML(title, _list, 
                         `<h2>${title}</h2><p>${description}</p>`, 
-                        `<a href="/create">create</a>  <a href="/update?id=${title}">update</a>`);
+                        `<a href="/create">create</a>
+                        <a href="/update?id=${title}">update</a>  
+                        <form action="delete_process" method="post">
+                            <input  type="hidden" name="id" value="${title}">
+                            <input type="submit" value="delete">
+                        </form>`);
+                        
                     res.writeHead(200);
                     res.end(template);
-                })
+                });
             });
         }
     }else if(pathname === '/create'){
@@ -158,9 +164,9 @@ var app = http.createServer(function (req, res) {
             var title = post.title;
             var description = post.description;
 
-            console.log("id : "+id)
-            console.log("title : "+title)
-            console.log("description : "+description)
+            // console.log("id : "+id)
+            // console.log("title : "+title)
+            // console.log("description : "+description)
 
             fs.rename(`data/${id}`, `data/${title}`, function(err){
 
@@ -170,6 +176,21 @@ var app = http.createServer(function (req, res) {
             function(err){
                 res.writeHead(302, {Location: `/?id=${title}`});
                 res.end('success');
+            })
+        })
+    }else if(pathname === "/delete_process"){
+        // API post 형식으로 데이터를 받을 때 사용하는 형식
+        var body='';
+        req.on('data', function(data){
+            body = body + data;
+        });
+        req.on('end', function(){
+            var post = qs.parse(body);
+            var id = post.id;
+
+            fs.unlink(`data/${id}`, function(err){
+                res.writeHead(302, {Location: `/`});
+                res.end();
             })
         })
     }
