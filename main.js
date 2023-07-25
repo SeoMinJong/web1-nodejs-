@@ -3,44 +3,44 @@ var fs = require('fs');
 var url = require('url');
 var qs = require('querystring');
 
-function templateHTML(title, list, body, control){
+var template_f = {
+    html:function(title, list, body, control){
 
-    return `
-    <!doctype html>
-    <html>
-    
-    <head>
-        <meta charset="utf-8">
-        <link rel="icon" href="data:,">
-        <title>WEB1 - ${title}</title>
-    </head>
-    
-    <body>
-        <h1><a href="/">WEB</a></h1>
-        ${list}
-        ${control}
+        return `
+        <!doctype html>
+        <html>
         
-    ${body}
-    </body>
+        <head>
+            <meta charset="utf-8">
+            <link rel="icon" href="data:,">
+            <title>WEB1 - ${title}</title>
+        </head>
+        
+        <body>
+            <h1><a href="/">WEB</a></h1>
+            ${list}
+            ${control}
+            
+        ${body}
+        </body>
+        
+        </html>
+        `
+    },
+    list:function(filelist) {
+        _list = '<ul>';
+        var i = 0;
     
-    </html>
-    `
-};
-
-
-
-function templateList(filelist) {
-    _list = '<ul>';
-    var i = 0;
-
-    while (filelist.length > i){
-        _list += `\n<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`
-        i += 1;
-    };
-    _list += '</ul>'
-
-    return _list
+        while (filelist.length > i){
+            _list += `\n<li><a href="/?id=${filelist[i]}">${filelist[i]}</a></li>`
+            i += 1;
+        };
+        _list += '</ul>'
+    
+        return _list
+    }
 }
+
 
 var app = http.createServer(function (req, res) {
     var _url = req.url;
@@ -60,8 +60,8 @@ var app = http.createServer(function (req, res) {
                 var description = 'Hellom, Node.js';
 
                 // 유동적인 파일 
-                var _list = templateList(filelist);
-                var template = templateHTML(title, _list, 
+                var _list = template_f.list(filelist);
+                var template = template_f.html(title, _list, 
                     `<h2>${title}</h2><p>${description}</p>`, 
                     `<a href="/create">create</a>`);
                 
@@ -74,8 +74,8 @@ var app = http.createServer(function (req, res) {
             fs.readdir('./data', function(err, filelist){
                 fs.readFile(`data/${query_date.id}`, 'utf-8', function (err, description) {
                     var title = query_date.id;
-                    var _list = templateList(filelist);
-                    var template = templateHTML(title, _list, 
+                    var _list = template_f.list(filelist);
+                    var template = template_f.html(title, _list, 
                         `<h2>${title}</h2><p>${description}</p>`, 
                         `<a href="/create">create</a>
                         <a href="/update?id=${title}">update</a>  
@@ -94,8 +94,8 @@ var app = http.createServer(function (req, res) {
             var title = 'WEB - CREATE';
 
             // 유동적인 파일 
-            var _list = templateList(filelist);
-            var template = templateHTML(title, _list, `
+            var _list = template_f.list(filelist);
+            var template = template_f.html(title, _list, `
             <form action="/create_process" method="post">
             <p><input type="text" name="title" placeholder="title"></p>
             <p>
@@ -134,8 +134,8 @@ var app = http.createServer(function (req, res) {
         fs.readdir('./data', function(err, filelist){
             fs.readFile(`data/${query_date.id}`, 'utf-8', function (err, description) {
                 var title = query_date.id;
-                var _list = templateList(filelist);
-                var template = templateHTML(title, _list, 
+                var _list = template_f.list(filelist);
+                var template = template_f.html(title, _list, 
                     `
                     <form action="/update_process" method="post">
                     <input type="hidden" name="id" value="${title}">
