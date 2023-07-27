@@ -1,9 +1,10 @@
-var http = require('http');
-var fs = require('fs');
-var url = require('url');
-var qs = require('querystring');
-var path = require('path');
-var template_f = require('./lib/template.js');
+const http = require('http');
+const fs = require('fs');
+const url = require('url');
+const qs = require('querystring');
+const path = require('path');
+const template_f = require('./lib/template.js');
+const sanitizeHtml = require('sanitize-html');
 
 
 
@@ -39,14 +40,18 @@ var app = http.createServer(function (req, res) {
             fs.readdir('./data', function(err, filelist){
                 var filteredID = path.parse(query_date.id).base;
                 fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
-                    // var title = query_date.id;
+                    var title = query_date.id;
+                    var sanitizedTitle = sanitizeHtml(title);
+                    var sanitizedDesscription = sanitizeHtml(description,{
+                        allowedTags:['h1']
+                    });
                     var _list = template_f.list(filelist);
-                    var template = template_f.html(filteredID, _list, 
-                        `<h2>${filteredID}</h2><p>${description}</p>`, 
+                    var template = template_f.html(sanitizedTitle, _list, 
+                        `<h2>${sanitizedTitle}</h2><p>${sanitizedDesscription}</p>`, 
                         `<a href="/create">create</a>
-                        <a href="/update?id=${filteredID}">update</a>  
+                        <a href="/update?id=${sanitizedTitle}">update</a>  
                         <form action="delete_process" method="post">
-                            <input  type="hidden" name="id" value="${filteredID}">
+                            <input  type="hidden" name="id" value="${sanitizedTitle}">
                             <input type="submit" value="delete">
                         </form>`);
                         
@@ -130,10 +135,6 @@ var app = http.createServer(function (req, res) {
             var id = post.id;
             var title = post.title;
             var description = post.description;
-
-            // console.log("id : "+id)
-            // console.log("title : "+title)
-            // console.log("description : "+description)
 
             fs.rename(`data/${id}`, `data/${title}`, function(err){
 
