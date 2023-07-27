@@ -2,7 +2,8 @@ var http = require('http');
 var fs = require('fs');
 var url = require('url');
 var qs = require('querystring');
-var template_f = require('./lib/template.js')
+var path = require('path');
+var template_f = require('./lib/template.js');
 
 
 
@@ -36,15 +37,16 @@ var app = http.createServer(function (req, res) {
         } else {
             // 유동적인 파일 목록 리스트
             fs.readdir('./data', function(err, filelist){
-                fs.readFile(`data/${query_date.id}`, 'utf-8', function (err, description) {
-                    var title = query_date.id;
+                var filteredID = path.parse(query_date.id).base;
+                fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
+                    // var title = query_date.id;
                     var _list = template_f.list(filelist);
-                    var template = template_f.html(title, _list, 
-                        `<h2>${title}</h2><p>${description}</p>`, 
+                    var template = template_f.html(filteredID, _list, 
+                        `<h2>${filteredID}</h2><p>${description}</p>`, 
                         `<a href="/create">create</a>
-                        <a href="/update?id=${title}">update</a>  
+                        <a href="/update?id=${filteredID}">update</a>  
                         <form action="delete_process" method="post">
-                            <input  type="hidden" name="id" value="${title}">
+                            <input  type="hidden" name="id" value="${filteredID}">
                             <input type="submit" value="delete">
                         </form>`);
                         
@@ -96,7 +98,8 @@ var app = http.createServer(function (req, res) {
     }else if(pathname === "/update"){
         // 유동적인 파일 목록 리스트
         fs.readdir('./data', function(err, filelist){
-            fs.readFile(`data/${query_date.id}`, 'utf-8', function (err, description) {
+            var filteredID = path.parse(query_date.id).base
+            fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
                 var title = query_date.id;
                 var _list = template_f.list(filelist);
                 var template = template_f.html(title, _list, 
@@ -151,8 +154,9 @@ var app = http.createServer(function (req, res) {
         req.on('end', function(){
             var post = qs.parse(body);
             var id = post.id;
+            var filteredID = path.parse(id).base;
 
-            fs.unlink(`data/${id}`, function(err){
+            fs.unlink(`data/${filteredID}`, function(err){
                 res.writeHead(302, {Location: `/`});
                 res.end();
             })
