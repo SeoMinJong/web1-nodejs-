@@ -1,4 +1,6 @@
-const express = require('express')
+const sanitizeHtml = require('sanitize-html');
+const express = require('express');
+const path = require('path');
 const fs = require('fs');
 
 const template_f = require('./lib/template.js');
@@ -21,8 +23,28 @@ app.get('/', (req, res) => {
     })
 })
 
-app.get('/page', (req, res) => {
-    return res.send('Hello page!')
+app.get('/page/:pageId', function(req, res){
+    var pageId = req.params.pageId
+    fs.readdir('./data', function(err, filelist){
+        var filteredID = path.parse(pageId).base;
+        fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
+            var sanitizedTitle = sanitizeHtml(pageId);
+            var sanitizedDesscription = sanitizeHtml(description,{
+                allowedTags:['h1']
+            });
+            var _list = template_f.list(filelist);
+            var template = template_f.html(sanitizedTitle, _list, 
+                `<h2>${sanitizedTitle}</h2><p>${sanitizedDesscription}</p>`, 
+                `<a href="/create">create</a>
+                <a href="/update?id=${sanitizedTitle}">update</a>  
+                <form action="delete_process" method="post">
+                    <input  type="hidden" name="id" value="${sanitizedTitle}">
+                    <input type="submit" value="delete">
+                </form>`);
+                
+            res.send(template);
+        });
+    });
 })
 
 app.listen(port, function(){
