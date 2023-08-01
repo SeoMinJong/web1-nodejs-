@@ -25,11 +25,10 @@ app.get('/', (req, res) => {
 })
 
 app.get('/page/:pageId', function(req, res){
-    var pageId = req.params.pageId
     fs.readdir('./data', function(err, filelist){
-        var filteredID = path.parse(pageId).base;
+        const filteredID = path.parse(req.params.pageId).base;
         fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
-            var sanitizedTitle = sanitizeHtml(pageId);
+            var sanitizedTitle = sanitizeHtml(req.params.pageId);
             var sanitizedDesscription = sanitizeHtml(description,{
                 allowedTags:['h1']
             });
@@ -38,8 +37,8 @@ app.get('/page/:pageId', function(req, res){
                 `<h2>${sanitizedTitle}</h2><p>${sanitizedDesscription}</p>`, 
                 `<a href="/create">create</a>
                 <a href="/update/${sanitizedTitle}">update</a>  
-                <form action="delete_process" method="post">
-                    <input  type="hidden" name="id" value="${sanitizedTitle}">
+                <form action="/delete_process" method="post">
+                    <input type="hidden" name="id" value="${sanitizedTitle}">
                     <input type="submit" value="delete">
                 </form>`);
                 
@@ -75,6 +74,7 @@ app.post('/create_process', function(req, res){
     var body='';
     req.on('data', function(data){
         body = body + data;
+        console.log('body : '+body);
     });
     req.on('end', function(){
         var post = qs.parse(body);
@@ -83,11 +83,11 @@ app.post('/create_process', function(req, res){
         
         fs.writeFile(`data/${title}`, description, 'utf-8',
         function(err){
-            res.writeHead(302, {Location: `page/${title}`});
+            res.writeHead(302, {Location: `/page/${title}`});
             res.end('success');
         })
     });
-})
+});
 
 
 app.get('/update/:pageId', function(req, res){
@@ -109,7 +109,7 @@ app.get('/update/:pageId', function(req, res){
                     <input type="submit">
                 </p>
                 </form>`, 
-                `<a href="/create">create</a>  <a href="/update?id=${title}">update</a>`);
+                `<a href="/create">create</a>  <a href="/update/${title}">update</a>`);
             res.send(template);
         })
     })
@@ -126,14 +126,14 @@ app.post('/update_process', function(req, res){
         var title = post.title;
         var description = post.description;
 
+        console.log()
+
         fs.rename(`data/${id}`, `data/${title}`, function(err){
-
-        })
-
-        fs.writeFile(`data/${title}`, description, 'utf-8',
-        function(err){
-            res.writeHead(302, {Location: `/page/${title}`});
-            res.end('success');
+            fs.writeFile(`data/${title}`, description, 'utf-8',
+            function(err){
+                res.writeHead(302, {Location: `/page/${title}`});
+                res.end('success');
+            })
         })
     })
 })
