@@ -1,13 +1,17 @@
 const sanitizeHtml = require('sanitize-html');
+var bodyParser = require('body-parser');
 const express = require('express');
 const qs = require('querystring');
 const path = require('path');
 const fs = require('fs');
 
+
 const template_f = require('./lib/template.js');
 
 const app = express()
 const port = 3000
+
+app.use(bodyParser.urlencoded({ extended: false }))
 
 app.get('/', (req, res) => {
     fs.readdir('./data', function(err, filelist){
@@ -71,6 +75,7 @@ app.get('/create',function(req,res){
 })
 
 app.post('/create_process', function(req, res){
+    /*
     var body='';
     req.on('data', function(data){
         body = body + data;
@@ -87,6 +92,17 @@ app.post('/create_process', function(req, res){
             res.end('success');
         })
     });
+    */
+    var post = req.body;
+    var title = post.title;
+    var description = post.description;
+    
+    fs.writeFile(`data/${title}`, description, 'utf-8',
+    function(err){
+        res.writeHead(302, {Location: `/page/${title}`});
+        res.end('success');
+    })
+    
 });
 
 
@@ -116,6 +132,7 @@ app.get('/update/:pageId', function(req, res){
 })
 
 app.post('/update_process', function(req, res){
+    /*
     var body='';
     req.on('data', function(data){
         body = body + data;
@@ -136,9 +153,25 @@ app.post('/update_process', function(req, res){
             })
         })
     })
+    */
+    var post = req.body;
+    var id = post.id;
+    var title = post.title;
+    var description = post.description;
+
+    console.log()
+
+    fs.rename(`data/${id}`, `data/${title}`, function(err){
+        fs.writeFile(`data/${title}`, description, 'utf-8',
+        function(err){
+            res.writeHead(302, {Location: `/page/${title}`});
+            res.end('success');
+        })
+    })
 })
 
 app.post('/delete_process', function(req, res){
+    /*
     var body='';
     req.on('data', function(data){
         body = body + data;
@@ -153,7 +186,15 @@ app.post('/delete_process', function(req, res){
             res.end();
         })
     })
+    */
+    var post = req.body;
+    var id = post.id;
+    var filteredID = path.parse(id).base;
 
+    fs.unlink(`data/${filteredID}`, function(err){
+        res.writeHead(302, {Location: `/`});
+        res.end();
+    })
 })
 
 app.listen(port, function(){
