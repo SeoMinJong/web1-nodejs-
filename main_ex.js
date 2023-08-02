@@ -15,30 +15,37 @@ const port = 3000
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(compression())
 
-app.get('/', (req, res) => {
+//use가 아닌 get을 통해 현재 작성된 process 기능의 경우에는 list를 호출하지 않게 할 수 있다.
+//또한 '*'을 작성하여 모든 호출에 대해 리스트를 불러오는 미들웨어가 호출되도록 함
+app.get('*',function(req, res, next){ 
     fs.readdir('./data', function(err, filelist){
+        req.list = filelist;
+        next();//다음에 호출되어야 할 미들웨어가 실행됨
+    });
+});
+
+app.get('/', (req, res) => {
+    console.log(req.list);
         var title = 'Welcome';
         var description = 'Hello, Node.js';
 
         // 유동적인 파일 
-        var _list = template_f.list(filelist);
+        var _list = template_f.list(req.list);
         var template = template_f.html(title, _list, 
             `<h2>${title}</h2><p>${description}</p>`, 
             `<a href="/create">create</a>`);
         
         res.send(template);
-    })
 })
 
 app.get('/page/:pageId', function(req, res){
-    fs.readdir('./data', function(err, filelist){
         const filteredID = path.parse(req.params.pageId).base;
         fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
             var sanitizedTitle = sanitizeHtml(req.params.pageId);
             var sanitizedDesscription = sanitizeHtml(description,{
                 allowedTags:['h1']
             });
-            var _list = template_f.list(filelist);
+            var _list = template_f.list(req.list);
             var template = template_f.html(sanitizedTitle, _list, 
                 `<h2>${sanitizedTitle}</h2><p>${sanitizedDesscription}</p>`, 
                 `<a href="/create">create</a>
@@ -49,17 +56,15 @@ app.get('/page/:pageId', function(req, res){
                 </form>`);
                 
             res.send(template);
-        });
     });
 })
 
 
 app.get('/create',function(req,res){
-    fs.readdir('./data', function(err, filelist){
         var title = 'WEB - CREATE';
 
         // 유동적인 파일 
-        var _list = template_f.list(filelist);
+        var _list = template_f.list(req.list);
         var template = template_f.html(title, _list, `
         <form action="/create_process" method="post">
         <p><input type="text" name="title" placeholder="title"></p>
@@ -73,7 +78,6 @@ app.get('/create',function(req,res){
         '');
         
         res.send(template);
-    })
 })
 
 app.post('/create_process', function(req, res){
@@ -110,11 +114,10 @@ app.post('/create_process', function(req, res){
 
 app.get('/update/:pageId', function(req, res){
     // 유동적인 파일 목록 리스트
-    fs.readdir('./data', function(err, filelist){
         var filteredID = path.parse(req.params.pageId).base
         fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
             var title = req.params.pageId;
-            var _list = template_f.list(filelist);
+            var _list = template_f.list(req.list);
             var template = template_f.html(title, _list, 
                 `
                 <form action="/update_process" method="post">
@@ -129,7 +132,6 @@ app.get('/update/:pageId', function(req, res){
                 </form>`, 
                 `<a href="/create">create</a>  <a href="/update/${title}">update</a>`);
             res.send(template);
-        })
     })
 })
 
