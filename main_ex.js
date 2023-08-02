@@ -1,5 +1,6 @@
 const sanitizeHtml = require('sanitize-html');
-var bodyParser = require('body-parser');
+const compression = require('compression');
+const bodyParser = require('body-parser');
 const express = require('express');
 const qs = require('querystring');
 const path = require('path');
@@ -11,7 +12,8 @@ const template_f = require('./lib/template.js');
 const app = express()
 const port = 3000
 
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(compression())
 
 app.get('/', (req, res) => {
     fs.readdir('./data', function(err, filelist){
