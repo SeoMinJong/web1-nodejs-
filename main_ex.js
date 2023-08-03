@@ -12,6 +12,7 @@ const template_f = require('./lib/template.js');
 const app = express()
 const port = 3000
 
+app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(compression())
 
@@ -25,59 +26,59 @@ app.get('*',function(req, res, next){
 });
 
 app.get('/', (req, res) => {
-    console.log(req.list);
-        var title = 'Welcome';
-        var description = 'Hello, Node.js';
+    var title = 'Welcome';
+    var description = 'Hello, Node.js';
 
-        // 유동적인 파일 
-        var _list = template_f.list(req.list);
-        var template = template_f.html(title, _list, 
-            `<h2>${title}</h2><p>${description}</p>`, 
-            `<a href="/create">create</a>`);
-        
-        res.send(template);
+    // 유동적인 파일 
+    var _list = template_f.list(req.list);
+    var template = template_f.html(title, _list, 
+        `<h2>${title}</h2><p>${description}</p>
+        <img src='/img/hello.jpg' style='width:30%; display:block; margin-top:3px;'>`, 
+        `<a href="/create">create</a>`);
+    
+    res.send(template);
 })
 
 app.get('/page/:pageId', function(req, res){
-        const filteredID = path.parse(req.params.pageId).base;
-        fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
-            var sanitizedTitle = sanitizeHtml(req.params.pageId);
-            var sanitizedDesscription = sanitizeHtml(description,{
-                allowedTags:['h1']
-            });
-            var _list = template_f.list(req.list);
-            var template = template_f.html(sanitizedTitle, _list, 
-                `<h2>${sanitizedTitle}</h2><p>${sanitizedDesscription}</p>`, 
-                `<a href="/create">create</a>
-                <a href="/update/${sanitizedTitle}">update</a>  
-                <form action="/delete_process" method="post">
-                    <input type="hidden" name="id" value="${sanitizedTitle}">
-                    <input type="submit" value="delete">
-                </form>`);
-                
-            res.send(template);
+    const filteredID = path.parse(req.params.pageId).base;
+    fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
+        var sanitizedTitle = sanitizeHtml(req.params.pageId);
+        var sanitizedDesscription = sanitizeHtml(description,{
+            allowedTags:['h1']
+        });
+        var _list = template_f.list(req.list);
+        var template = template_f.html(sanitizedTitle, _list, 
+            `<h2>${sanitizedTitle}</h2><p>${sanitizedDesscription}</p>`, 
+            `<a href="/create">create</a>
+            <a href="/update/${sanitizedTitle}">update</a>  
+            <form action="/delete_process" method="post">
+                <input type="hidden" name="id" value="${sanitizedTitle}">
+                <input type="submit" value="delete">
+            </form>`);
+            
+        res.send(template);
     });
 })
 
 
 app.get('/create',function(req,res){
-        var title = 'WEB - CREATE';
+    var title = 'WEB - CREATE';
 
-        // 유동적인 파일 
-        var _list = template_f.list(req.list);
-        var template = template_f.html(title, _list, `
-        <form action="/create_process" method="post">
-        <p><input type="text" name="title" placeholder="title"></p>
-        <p>
-            <textarea name="description" placeholder="description"></textarea>
-        </p>
-        <p>
-            <input type="submit">
-        </p>
-        </form>`,
-        '');
-        
-        res.send(template);
+    // 유동적인 파일 
+    var _list = template_f.list(req.list);
+    var template = template_f.html(title, _list, `
+    <form action="/create_process" method="post">
+    <p><input type="text" name="title" placeholder="title"></p>
+    <p>
+        <textarea name="description" placeholder="description"></textarea>
+    </p>
+    <p>
+        <input type="submit">
+    </p>
+    </form>`,
+    '');
+    
+    res.send(template);
 })
 
 app.post('/create_process', function(req, res){
@@ -114,24 +115,24 @@ app.post('/create_process', function(req, res){
 
 app.get('/update/:pageId', function(req, res){
     // 유동적인 파일 목록 리스트
-        var filteredID = path.parse(req.params.pageId).base
-        fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
-            var title = req.params.pageId;
-            var _list = template_f.list(req.list);
-            var template = template_f.html(title, _list, 
-                `
-                <form action="/update_process" method="post">
-                <input type="hidden" name="id" value="${title}">
-                <p><input type="text" name="title" placeholder="title" value="${title}"></p>
-                <p>
-                    <textarea name="description" placeholder="description">${description}</textarea>
-                </p>
-                <p>
-                    <input type="submit">
-                </p>
-                </form>`, 
-                `<a href="/create">create</a>  <a href="/update/${title}">update</a>`);
-            res.send(template);
+    var filteredID = path.parse(req.params.pageId).base
+    fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
+        var title = req.params.pageId;
+        var _list = template_f.list(req.list);
+        var template = template_f.html(title, _list, 
+            `
+            <form action="/update_process" method="post">
+            <input type="hidden" name="id" value="${title}">
+            <p><input type="text" name="title" placeholder="title" value="${title}"></p>
+            <p>
+                <textarea name="description" placeholder="description">${description}</textarea>
+            </p>
+            <p>
+                <input type="submit">
+            </p>
+            </form>`, 
+            `<a href="/create">create</a>  <a href="/update/${title}">update</a>`);
+        res.send(template);
     })
 })
 
@@ -291,3 +292,4 @@ var app = http.createServer(function (req, res) {
 
 app.listen(3000);
 */
+
