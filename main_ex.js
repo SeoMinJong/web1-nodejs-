@@ -1,14 +1,22 @@
 const compression = require('compression');
 const bodyParser = require('body-parser');
 const express = require('express');
+const mysql = require('mysql');
 const fs = require('fs');
 
 const template_f = require('./lib/template.js');
-const topicRouter = require('./router/topic');
+const topicRouter = require('./router/topic.js');
 
 const app = express()
 const port = 3000
 
+var db = mysql.createConnection({
+    host:'127.0.0.1',
+    user:'root',
+    password:'123123',
+    database:'opentutorials'
+})
+db.connect();
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -27,17 +35,23 @@ app.get('*',function(req, res, next){
 app.use('/topic', topicRouter);
 
 app.get('/', (req, res) => {
-    var title = 'Welcome';
-    var description = 'Hello, Node.js';
-
-    // 유동적인 파일 
-    var _list = template_f.list(req.list);
-    var template = template_f.html(title, _list, 
-        `<h2>${title}</h2><p>${description}</p>
-        <img src='/img/hello.jpg' style='width:30%; display:block; margin-top:3px;'>`, 
-        `<a href="/topic/create">create</a>`);
+    // var template = template_f.html(title, _list, 
+    //     `<h2>${title}</h2><p>${description}</p>
+    //     <img src='/img/hello.jpg' style='width:30%; display:block; margin-top:3px;'>`, 
+    //     `<a href="/topic/create">create</a>`);
+    db.query('SELECT * FROM topic', function(err, results, fields){
+        
+        var title = 'Welcome';
+        var description = 'Hello, Node.js';
+        var _list = template_f.list(results);
+        var template = template_f.html(title, _list, 
+            `<h2>${title}</h2><p>${description}</p>
+            <img src='/img/hello.jpg' style='width:30%; display:block; margin-top:3px;'>`, 
+            `<a href="/topic/create">create</a>`);
+        res.send(template);
+    });
     
-    res.send(template);
+    
 })
 
 app.use(function(err, req, res, next) {
