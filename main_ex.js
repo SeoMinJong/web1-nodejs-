@@ -7,16 +7,10 @@ const fs = require('fs');
 const template_f = require('./lib/template.js');
 const topicRouter = require('./router/topic.js');
 
+const db = require('./lib/mysql.js')
+
 const app = express()
 const port = 3000
-
-var db = mysql.createConnection({
-    host:'127.0.0.1',
-    user:'root',
-    password:'123123',
-    database:'opentutorials'
-})
-db.connect();
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -35,15 +29,11 @@ app.get('*',function(req, res, next){
 app.use('/topic', topicRouter);
 
 app.get('/', (req, res) => {
-    // var template = template_f.html(title, _list, 
-    //     `<h2>${title}</h2><p>${description}</p>
-    //     <img src='/img/hello.jpg' style='width:30%; display:block; margin-top:3px;'>`, 
-    //     `<a href="/topic/create">create</a>`);
-    db.query('SELECT * FROM topic', function(err, results, fields){
+    db.query('SELECT * FROM topic', function(err, topics){
         
         var title = 'Welcome';
         var description = 'Hello, Node.js';
-        var _list = template_f.list(results);
+        var _list = template_f.list(topics);
         var template = template_f.html(title, _list, 
             `<h2>${title}</h2><p>${description}</p>
             <img src='/img/hello.jpg' style='width:30%; display:block; margin-top:3px;'>`, 
