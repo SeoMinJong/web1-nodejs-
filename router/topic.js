@@ -77,16 +77,16 @@ router.get('/update/:pageId', function(req, res, next){
     var filteredID = path.parse(req.params.pageId).base;
     // 유동적인 파일 목록 리스트
     db.query(`SELECT * FROM topic`, function(err, topics){
-        db.query(`SELECT * FROM topic WHERE id=${filteredID}`, function(err, target_topic){
-            var title = target_topic.title;
+        db.query(`SELECT * FROM topic WHERE id='${filteredID}'`, function(err, target_topic){
+            var title = target_topic[0].title;
             var _list = template_f.list(topics);
             var template = template_f.html(title, _list, 
                 `
                 <form action="/topic/update_process" method="post">
-                <input type="hidden" name="id" value="${title}">
+                <input type="hidden" name="id" value="${filteredID}">
                 <p><input type="text" name="title" placeholder="title" value="${title}"></p>
                 <p>
-                    <textarea name="description" placeholder="description">${target_topic.description}</textarea>
+                    <textarea name="description" placeholder="description">${target_topic[0].description}</textarea>
                 </p>
                 <p>
                     <input type="submit">
@@ -95,28 +95,6 @@ router.get('/update/:pageId', function(req, res, next){
                 `<a href="/topic/create">create</a>  <a href="/topic/update/${title}">update</a>`);
             res.send(template);
         })
-    });
-
-
-    fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
-        var title = req.params.pageId;
-        var _list = template_f.list(req.list);
-        var template = template_f.html(title, _list, 
-            `
-            <form action="/topic/update_process" method="post">
-            <input type="hidden" name="id" value="${title}">
-            <p><input type="text" name="title" placeholder="title" value="${title}"></p>
-            <p>
-                <textarea name="description" placeholder="description">${description}</textarea>
-            </p>
-            <p>
-                <input type="submit">
-            </p>
-            </form>`, 
-            `<a href="/topic/create">create</a>  <a href="/topic/update/${title}">update</a>`);
-
-            
-        res.send(template);
     });
 })
 
@@ -145,14 +123,18 @@ router.post('/update_process', function(req, res){
     var id = post.id;
     var title = post.title;
     var description = post.description;
+    console.log("id :",id)
+    console.log("title :",title)
+    console.log("description :",description)
 
-    fs.rename(`data/${id}`, `data/${title}`, function(err){
-        fs.writeFile(`data/${title}`, description, 'utf-8',
-        function(err){
-            res.writeHead(302, {Location: `/topic/${title}`});
-            res.end('success');
-        })
+    db.query(`UPDATE topic SET title=?, description=? WHERE id=?`,[title, description, id], function(err, result){
+        if(err){
+            throw err
+        }
     })
+    res.writeHead(302, {Location: `/topic/${id}`});
+    res.end();
+
 })
 
 
@@ -162,7 +144,7 @@ router.get('/:pageId', function(req, res, next){
         if(err){
             throw err
         }
-        db.query(`SELECT * FROM topic WHERE title=?`,[filteredID], function(err2, target_topic){
+        db.query(`SELECT * FROM topic WHERE id=?`,[filteredID], function(err2, target_topic){
             if(err2){
                 throw err2
             }
@@ -173,34 +155,14 @@ router.get('/:pageId', function(req, res, next){
             var template = template_f.html(title, _list, 
                 `<h2>${title}</h2><p>${target_topic[0].description}</p>`, 
                 `<a href="/topic/create">create</a>
-                <a href="/update?id=${title}">update</a>  
+                <a href="/topic/update/${filteredID}">update</a>  
                 <form action="delete_process" method="post">
                     <input  type="hidden" name="id" value="${title}">
                     <input type="submit" value="delete">
                 </form>`);
                 
             res.send(template);
-    });
-    //     fs.readFile(`data/${filteredID}`, 'utf-8', function (err, description) {
-    //         if (err){
-    //             next(err);
-    //         } else{
-    //         var sanitizedTitle = sanitizeHtml(req.params.pageId);
-    //         var sanitizedDesscription = sanitizeHtml(description,{
-    //             allowedTags:['h1']
-    //         });
-    //         var _list = template_f.list(req.list);
-    //         var template = template_f.html(sanitizedTitle, _list, 
-    //             `<h2>${sanitizedTitle}</h2><p>${sanitizedDesscription}</p>`, 
-    //             `<a href="/topic/create">create</a>
-    //             <a href="/topic/update/${sanitizedTitle}">update</a>  
-    //             <form action="/topic/delete_process" method="post">
-    //                 <input type="hidden" name="id" value="${sanitizedTitle}">
-    //                 <input type="submit" value="delete">
-    //             </form>`);
-                
-    //         res.send(template);
-    // }})
+        });
     })
 });
 
