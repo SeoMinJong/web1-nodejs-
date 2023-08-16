@@ -6,7 +6,8 @@ const path = require('path');
 const fs = require('fs');
 
 const template_f = require('../lib/template.js');
-const db = require('../lib/mysql.js')
+const db = require('../lib/mysql.js');
+const { time } = require('console');
 
 router.get('/create',function(req,res){
     db.query('SELECT * FROM topic', function(err, topics){
@@ -35,43 +36,31 @@ router.get('/create',function(req,res){
 
 router.post('/create_process', function(req, res){
     var post = req.body;
+    console.log("post :",post)
     db.query(`INSERT INTO topic (title, description, created, author_id) VALUES (?, ?, NOW(), ?)`,[post.title, post.description, 1],
         function(err, result){
             if(err){
                 throw err
             }
+            console.log("result.insertId :",result.insertId)
+            res.writeHead(302, {Location: `/topic/${result.insertId}`});
+            res.end('success');
     });
     
-    res.writeHead(302, {Location: `/topic/${post.title}`});
-    res.end('success');    
 });
 
-router.post('/delete_process', function(req, res){
-    /*
-    var body='';
-    req.on('data', function(data){
-        body = body + data;
-    });
-    req.on('end', function(){
-        var post = qs.parse(body);
-        var id = post.id;
-        var filteredID = path.parse(id).base;
-
-        fs.unlink(`data/${filteredID}`, function(err){
-            res.writeHead(302, {Location: `/`});
-            res.end();
-        })
-    })
-    */
+router.post('/delete_process', function(req, res){    
     var post = req.body;
     var id = post.id;
-    var filteredID = path.parse(id).base;
-
-    fs.unlink(`data/${filteredID}`, function(err){
-        res.writeHead(302, {Location: `/`});
-        res.end();
-    })
-})
+    db.query(`DELETE FROM topic WHERE id=?`,[id],
+        function(err, result){
+            if(err){
+                throw err
+            }
+            res.writeHead(302, {Location: `/`})
+            res.end();
+    });
+});
 
 router.get('/update/:pageId', function(req, res, next){
     var filteredID = path.parse(req.params.pageId).base;
@@ -99,26 +88,6 @@ router.get('/update/:pageId', function(req, res, next){
 })
 
 router.post('/update_process', function(req, res){
-    /*
-    var body='';
-    req.on('data', function(data){
-        body = body + data;
-    });
-    req.on('end', function(){
-        var post = qs.parse(body);
-        var id = post.id;
-        var title = post.title;
-        var description = post.description;
-
-        fs.rename(`data/${id}`, `data/${title}`, function(err){
-            fs.writeFile(`data/${title}`, description, 'utf-8',
-            function(err){
-                res.writeHead(302, {Location: `/page/${title}`});
-                res.end('success');
-            })
-        })
-    })
-    */
     var post = req.body;
     var id = post.id;
     var title = post.title;
@@ -140,6 +109,7 @@ router.post('/update_process', function(req, res){
 
 router.get('/:pageId', function(req, res, next){
     const filteredID = req.params.pageId;
+    console.log("filteredID :",filteredID)
     db.query('SELECT * FROM topic', function(err, topics){
         if(err){
             throw err
@@ -157,7 +127,7 @@ router.get('/:pageId', function(req, res, next){
                 `<a href="/topic/create">create</a>
                 <a href="/topic/update/${filteredID}">update</a>  
                 <form action="delete_process" method="post">
-                    <input  type="hidden" name="id" value="${title}">
+                    <input  type="hidden" name="id" value="${filteredID}">
                     <input type="submit" value="delete">
                 </form>`);
                 
