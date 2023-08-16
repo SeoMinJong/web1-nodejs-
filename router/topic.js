@@ -9,55 +9,41 @@ const template_f = require('../lib/template.js');
 const db = require('../lib/mysql.js')
 
 router.get('/create',function(req,res){
-    console.log('start create topic')
-    var title = 'WEB - CREATE';
+    db.query('SELECT * FROM topic', function(err, topics){
+        if(err){
+            throw err
+        }
+        var title = 'WEB - CREATE';
 
-    // 유동적인 파일 
-    var _list = template_f.list(req.list);
-    var template = template_f.html(title, _list, `
-    <form action="/topic/create_process" method="post">
-    <p><input type="text" name="title" placeholder="title"></p>
-    <p>
-        <textarea name="description" placeholder="description"></textarea>
-    </p>
-    <p>
-        <input type="submit">
-    </p>
-    </form>`,
-    '');
+        // 유동적인 파일 
+        var _list = template_f.list(topics);
+        var template = template_f.html(title, _list, `
+        <form action="/topic/create_process" method="post">
+        <p><input type="text" name="title" placeholder="title"></p>
+        <p>
+            <textarea name="description" placeholder="description"></textarea>
+        </p>
+        <p>
+            <input type="submit">
+        </p>
+        </form>`,
+        '');
     
-    res.send(template);
-})
+        res.send(template);
+    });
+});
 
 router.post('/create_process', function(req, res){
-    /*
-    var body='';
-    req.on('data', function(data){
-        body = body + data;
-        console.log('body : '+body);
-    });
-    req.on('end', function(){
-        var post = qs.parse(body);
-        var title = post.title;
-        var description = post.description;
-        
-        fs.writeFile(`data/${title}`, description, 'utf-8',
-        function(err){
-            res.writeHead(302, {Location: `/page/${title}`});
-            res.end('success');
-        })
-    });
-    */
     var post = req.body;
-    var title = post.title;
-    var description = post.description;
+    db.query(`INSERT INTO topic (title, description, created, author_id) VALUES (?, ?, NOW(), ?)`,[post.title, post.description, 1],
+        function(err, result){
+            if(err){
+                throw err
+            }
+    });
     
-    fs.writeFile(`data/${title}`, description, 'utf-8',
-    function(err){
-        res.writeHead(302, {Location: `/topic/${title}`});
-        res.end('success');
-    })
-    
+    res.writeHead(302, {Location: `/topic/${post.title}`});
+    res.end('success');    
 });
 
 router.post('/delete_process', function(req, res){
@@ -106,7 +92,7 @@ router.get('/update/:pageId', function(req, res, next){
                     <input type="submit">
                 </p>
                 </form>`, 
-                `<a href="/create">create</a>  <a href="/topic/update/${title}">update</a>`);
+                `<a href="/topic/create">create</a>  <a href="/topic/update/${title}">update</a>`);
             res.send(template);
         })
     });
@@ -127,7 +113,7 @@ router.get('/update/:pageId', function(req, res, next){
                 <input type="submit">
             </p>
             </form>`, 
-            `<a href="/create">create</a>  <a href="/topic/update/${title}">update</a>`);
+            `<a href="/topic/create">create</a>  <a href="/topic/update/${title}">update</a>`);
 
             
         res.send(template);
@@ -146,8 +132,6 @@ router.post('/update_process', function(req, res){
         var title = post.title;
         var description = post.description;
 
-        console.log()
-
         fs.rename(`data/${id}`, `data/${title}`, function(err){
             fs.writeFile(`data/${title}`, description, 'utf-8',
             function(err){
@@ -162,8 +146,6 @@ router.post('/update_process', function(req, res){
     var title = post.title;
     var description = post.description;
 
-    console.log()
-
     fs.rename(`data/${id}`, `data/${title}`, function(err){
         fs.writeFile(`data/${title}`, description, 'utf-8',
         function(err){
@@ -176,12 +158,10 @@ router.post('/update_process', function(req, res){
 
 router.get('/:pageId', function(req, res, next){
     const filteredID = req.params.pageId;
-    console.log('filteredID :',filteredID)
     db.query('SELECT * FROM topic', function(err, topics){
         if(err){
             throw err
         }
-        console.log('topics :\n',topics);
         db.query(`SELECT * FROM topic WHERE title=?`,[filteredID], function(err2, target_topic){
             if(err2){
                 throw err2
@@ -192,7 +172,7 @@ router.get('/:pageId', function(req, res, next){
 
             var template = template_f.html(title, _list, 
                 `<h2>${title}</h2><p>${target_topic[0].description}</p>`, 
-                `<a href="/create">create</a>
+                `<a href="/topic/create">create</a>
                 <a href="/update?id=${title}">update</a>  
                 <form action="delete_process" method="post">
                     <input  type="hidden" name="id" value="${title}">
