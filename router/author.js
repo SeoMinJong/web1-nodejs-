@@ -7,5 +7,11 @@ router.get('/',function(req,res){
     author_func.author_func(req, res);
 });
 
+router.post('/create_process',function(req,res){
+    author_func.author_create_func(req, res);
+});
+
+// router.post('/',)
+
 
 module.exports = router;

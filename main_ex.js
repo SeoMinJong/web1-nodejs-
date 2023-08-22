@@ -4,6 +4,7 @@ const express = require('express');
 
 const template_f = require('./lib/template.js');
 const topicRouter = require('./router/topic.js');
+const authorRouter = require('./router/author.js');
 
 const db = require('./lib/mysql.js')
 
@@ -15,10 +16,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(compression())
 
 app.use('/topic', topicRouter);
+app.use('/author', authorRouter);
 
 app.get('/', (req, res) => {
     db.query('SELECT * FROM topic', function(err, topics){
-        
         var title = 'Welcome';
         var description = 'Hello, Node.js';
         var _list = template_f.list(topics);
