@@ -11,7 +11,12 @@ router.post('/create_process',function(req,res){
     author_func.author_create_func(req, res);
 });
 
-// router.post('/',)
+router.get('/update/:authorId',function(req,res){
+    author_func.author_update_func(req, res);
+});
 
+router.post('/update_process',function(req,res){
+    author_func.author_update_process_func(req, res);
+})
 
 module.exports = router;
