@@ -20,7 +20,6 @@ router.post('/update_process',function(req,res){
 })
 
 router.get('/delete/:authorId', function(req, res){
-    console.log('start delete')
     author_func.author_delete_process_func(req, res);
 })
 
