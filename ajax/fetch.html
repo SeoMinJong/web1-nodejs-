@@ -4,7 +4,7 @@
         <input type="button" value="fetch" onclick="
             fetch('HTML').then(function(res){
                 res.text().then(function(text){
-                    alert(text);
+                    document.querySelector('article').innerHTML = text;
                 })
             })
         ">
