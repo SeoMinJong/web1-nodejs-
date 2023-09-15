@@ -3,10 +3,17 @@
     <body>
         <input type="button" value="fetch" onclick="
             fetch('HTML').then(function(res){
-                res.text().then(function(text){
+                console.log('res.status :',res.status)
+                if (res.status == 404){
+                    alert('Not found')
+                }
+                else res.text().then(function(text){
                     document.querySelector('article').innerHTML = text;
                 })
             })
         ">
+        <article>
+            
+        </article>
     </body>
 </html>
