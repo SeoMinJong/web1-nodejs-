@@ -10,13 +10,15 @@ http.createServer(function(req, res){
     };
     console.log("get parser_cookie!")
     console.log(cookies.yummy_cookie);
-    // res.writeHead(200, {
-    //     'Set-Cookie':[
-    //         'yummy_cookie=choco', 
-    //         'tasty_cookie=strawbarry',
-    //         `Perment=cookies; Max-Age=${60*60*24*30}`
-    //     ]
-    // });
+    res.writeHead(200, {
+        'Set-Cookie':[
+            'yummy_cookie=choco',   
+            'tasty_cookie=strawbarry',
+            `Perment=cookies; Max-Age=${60*60*24*30}`,
+            'cookie-name=cookie-value; Secure',
+            'HttpOnly=HttpOnly; HttpOnly'
+        ]
+    });
     
     res.end("Cookie!!");
 }).listen(3000);
