@@ -12,15 +12,9 @@
     nightDayHandler(this);
   ">
   <ol id="nav">
-    <li><a onclick="
-      article_func('HTML')
-      ">HTML</a></li>
-    <li><a onclick="
-      article_func('CSS')
-      ">CSS</a></li>    
-      <li><a onclick="
-      article_func('JavaScript')
-      ">JavaScript</a></li>
+    <li><a href="#!HTML" onclick="article_func('HTML')">HTML</a></li>
+    <li><a href="#!CSS" onclick="article_func('CSS')">CSS</a></li>    
+    <li><a href="#!JavaScript" onclick="article_func('JavaScript')">JavaScript</a></li>
   </ol>
   <article>
 
@@ -36,6 +30,11 @@
             document.querySelector('article').innerHTML = text;
         });
       });
+    }
+    if(location.hash){
+      article_func(location.hash.substr(2))
+    } else {
+      article_func('Welcome')
     }
   </script>
 </body>
