@@ -76,6 +76,10 @@ var app = http.createServer(function(request,response){
         });
       }
     } else if(pathname === '/create'){
+      if(authIsOwner(request, response) === false){
+        response.end('Login required!!')
+        return false;
+      }
       fs.readdir('./data', function(error, filelist){
         var title = 'WEB - create';
         var list = template.list(filelist);
@@ -108,6 +112,10 @@ var app = http.createServer(function(request,response){
           })
       });
     } else if(pathname === '/update'){
+      if(authIsOwner(request, response) === false){
+        response.end('Login required!!')
+        return false;
+      }
       fs.readdir('./data', function(error, filelist){
         var filteredId = path.parse(queryData.id).base;
         fs.readFile(`data/${filteredId}`, 'utf8', function(err, description){
@@ -134,6 +142,10 @@ var app = http.createServer(function(request,response){
         });
       });
     } else if(pathname === '/update_process'){
+      if(authIsOwner(request, response) === false){
+        response.end('Login required!!')
+        return false;
+      }
       var body = '';
       request.on('data', function(data){
           body = body + data;
@@ -151,6 +163,10 @@ var app = http.createServer(function(request,response){
           });
       });
     } else if(pathname === '/delete_process'){
+      if(authIsOwner(request, response) === false){
+        response.end('Login required!!')
+        return false;
+      }
       var body = '';
       request.on('data', function(data){
           body = body + data;
@@ -170,7 +186,7 @@ var app = http.createServer(function(request,response){
         var list = template.list(filelist);
         var html = template.HTML(title, list,
           `<form action='login_process' method='post'>
-            <p><input type="text" name="email" placeholder="email"></p>
+            <p><input type="text" name="email" placeholder="email"></p> 
             <p><input type="password" name="password" placeholder="password"></p>
             <p><input type="submit"></p>
           </form>`,
